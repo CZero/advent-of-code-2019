@@ -1,4 +1,4 @@
-module a
+module b
 
 go 1.18
 

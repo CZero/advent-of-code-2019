@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -20,7 +21,7 @@ func main() {
 func runIntcode(code string) {
 	rcode := resolveIntcode(code)
 	rcode = preAdjust(rcode)
-	executed := runSteps(rcode)
+	executed, err := runSteps(rcode)
 	// fmt.Println(code)
 	// fmt.Println(executed)
 	fmt.Printf("The answer: %d\n", executed[0])
@@ -36,15 +37,21 @@ func resolveIntcode(code string) (rescode []int) {
 }
 
 // runSteps follows through the steps in the code, 1 is add, 2 is multi, 99 is end
-func runSteps(input []int) []int {
+func runSteps(input []int) ([]int, error) {
 	var pos int // Tracks where we are
 	for {
 		switch input[pos] {
 		case 1: // Addition
+			if input[pos+1] > len(input-1) || input[pos+2] > len(input-1) {
+				return []int{}, errors.New("Out of bounds")
+			}
 			num1, num2 := input[input[pos+1]], input[input[pos+2]]
 			input[input[pos+3]] = num1 + num2
 			pos += 4
 		case 2: // Multiplication
+			if input[pos+1] > len(input-1) || input[pos+2] > len(input-1) {
+				return []int{}, errors.New("Out of bounds")
+			}
 			num1, num2 := input[input[pos+1]], input[input[pos+2]]
 			input[input[pos+3]] = num1 * num2
 			pos += 4
@@ -58,7 +65,7 @@ func runSteps(input []int) []int {
 
 // preAdjust is an addition to restore the previous state of the real input! (it crashes the other examples!)
 func preAdjust(input []int) []int {
-	input[1] = 12
-	input[2] = 2
+	input[1] = 64
+	input[2] = 72
 	return input
 }
