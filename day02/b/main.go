@@ -2,56 +2,57 @@
 package main
 
 import (
-	"errors"
+	"aoc/libaoc"
 	"fmt"
 	"strings"
-
-	"github.com/CZero/gofuncy/lfs"
 )
 
 func main() {
-	code, err := lfs.ReadLines("input.txt")
+	code, err := libaoc.ReadLines("input.txt")
 	if err != nil {
 		panic("No input!")
 	}
-	runIntcode(code[0])
+	for a := 0; a <= 99; a++ {
+		for b := 0; b <= 99; b++ {
+			answer := runIntcode(code[0], a, b)
+			if answer == 19690720 {
+				fmt.Printf("The answer: %d\nAchieved with %d\n", answer, 100*a+b)
+				break
+			}
+		}
+	}
 }
 
 // runIntcode is the coderunner
-func runIntcode(code string) {
+func runIntcode(code string, a, b int) int {
 	rcode := resolveIntcode(code)
-	rcode = preAdjust(rcode)
-	executed, err := runSteps(rcode)
+	rcode = preAdjust(rcode, a, b)
+	executed := runSteps(rcode)
 	// fmt.Println(code)
 	// fmt.Println(executed)
-	fmt.Printf("The answer: %d\n", executed[0])
+	return executed[0]
+
 }
 
 // resolveIntcode turns the string into []int (1,2,3,4 -> []int{1,2,3,4})
 func resolveIntcode(code string) (rescode []int) {
 	exploded := strings.Split(code, ",")
 	for _, num := range exploded {
-		rescode = append(rescode, lfs.SilentAtoi(num))
+		rescode = append(rescode, libaoc.SilentAtoi(num))
 	}
 	return rescode
 }
 
 // runSteps follows through the steps in the code, 1 is add, 2 is multi, 99 is end
-func runSteps(input []int) ([]int, error) {
+func runSteps(input []int) []int {
 	var pos int // Tracks where we are
 	for {
 		switch input[pos] {
 		case 1: // Addition
-			if input[pos+1] > len(input-1) || input[pos+2] > len(input-1) {
-				return []int{}, errors.New("Out of bounds")
-			}
 			num1, num2 := input[input[pos+1]], input[input[pos+2]]
 			input[input[pos+3]] = num1 + num2
 			pos += 4
 		case 2: // Multiplication
-			if input[pos+1] > len(input-1) || input[pos+2] > len(input-1) {
-				return []int{}, errors.New("Out of bounds")
-			}
 			num1, num2 := input[input[pos+1]], input[input[pos+2]]
 			input[input[pos+3]] = num1 * num2
 			pos += 4
@@ -64,8 +65,8 @@ func runSteps(input []int) ([]int, error) {
 }
 
 // preAdjust is an addition to restore the previous state of the real input! (it crashes the other examples!)
-func preAdjust(input []int) []int {
-	input[1] = 64
-	input[2] = 72
+func preAdjust(input []int, a, b int) []int {
+	input[1] = a
+	input[2] = b
 	return input
 }
